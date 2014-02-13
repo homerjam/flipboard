@@ -1,0 +1,18 @@
+{
+  "name": "flipboard",
+  "version": "0.0.0",
+  "authors": [
+    "homerjam <jameshomer85@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "paper": "~0.9.15"
+  }
+}

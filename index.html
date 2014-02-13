@@ -1,0 +1,46 @@
+<html>
+
+<head>
+
+<title>flipboard</title>
+
+<link rel="stylesheet" href="/style.css" />
+
+<script type="text/javascript" src="/bower_components/paper/dist/paper-full.min.js"></script>
+
+<script type="text/paperscript" src="/script.js" canvas="flipboard"></script>
+
+</head>
+
+<body>
+
+<canvas id="flipboard" resize hidpi="on"></canvas>
+
+<script type="text/javascript">
+
+var _resize = function(){
+
+	var b = document.getElementById('flipboard');
+
+	var s = 10;
+
+	var w = Math.floor(window.innerWidth / s) * s;
+	var h = Math.floor(window.innerHeight / s) * s;
+
+	b.style.width = w;
+	b.style.height = h;
+
+	b.style.left = (window.innerWidth - w) * 0.5;
+	b.style.top = (window.innerHeight - h) * 0.5;
+
+};
+
+// _resize();
+
+// window.addEventListener('resize', _resize);
+
+</script>
+
+</body>
+
+</html>
