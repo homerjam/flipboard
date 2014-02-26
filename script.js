@@ -32,7 +32,7 @@ var mouseMove = function(e) {
 
                 // t.ticker.reset();
                 // t.ticker.delayedReset(1000);
-                t.ticker.delayedStop(100 * (distance + distanceRateModifier) * distanceRateMultiplier);
+                t.ticker.delayedStop(100 * ((radius + 1) - distance) * distanceRateMultiplier);
 
             } else {
                 t.ticker.stop();
