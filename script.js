@@ -1,18 +1,20 @@
 var b, textArr, layoutArr, tickerArr, cols, rows,
-    radius = 4,
+    radius = 6,
     rounding = 0.75,
     distanceRateModifier = 2,
     distanceRateMultiplier = 1,
-    spacing = 50,
+    fontSize = 50,
+    spacingX = 50,
+    spacingY = 50,
     pad = 100,
-    chars = (location.search !== '' ? decodeURIComponent(location.search).slice(1) : '•◎◉◎◉').split('');
+    chars = (location.search !== '' ? decodeURIComponent(location.search).slice(1) : '☁☼').split('');
 
 var mouseMove = function(e) {
     var x = e.point.x - (b.position._x - (b.bounds.width / 2));
     var y = e.point.y - (b.position._y - (b.bounds.height / 2));
 
-    var col = Math.floor(x / spacing);
-    var row = Math.floor(y / spacing);
+    var col = Math.floor(x / spacingX);
+    var row = Math.floor(y / spacingY);
 
     for (var i = 0; i < cols; i++) {
 
@@ -28,10 +30,13 @@ var mouseMove = function(e) {
             if ((distanceX <= radius * rounding && distanceY <= radius * rounding) && distance <= radius) {
                 t.ticker.rate = (distance + distanceRateModifier) * distanceRateMultiplier;
 
-                t.ticker.delayedReset();
+                // t.ticker.reset();
+                // t.ticker.delayedReset(1000);
+                t.ticker.delayedStop(500);
 
             } else {
                 t.ticker.stop();
+                // t.ticker.delayedStop(500);
             }
 
         }
@@ -44,7 +49,8 @@ var ticker = function(t) {
     return {
         rate: 0,
         count: 0,
-        timeout: null,
+        resetTimeout: null,
+        stopTimeout: null,
 
         init: function() {
             this.reset();
@@ -62,11 +68,37 @@ var ticker = function(t) {
             }
         },
 
-        stop: function() {
-            if (this.timeout !== null) { clearTimeout(this.timeout); }
+        delayedStop: function(delay) {
+            delay = delay || 5000;
 
+            if (this.resetTimeout !== null) { clearTimeout(this.resetTimeout); }
+
+            if (this.stopTimeout === null) {
+                var _this = this;
+
+                this.stopTimeout = setTimeout(function(){
+                    _this.stop();
+
+                    _this.stopTimeout = null;
+                }, delay);
+            }
+        },
+
+        stop: function() {
             this.rate = 0;
             this.count = 0;
+        },
+
+        delayedReset: function(delay) {
+            delay = delay || 1000;
+
+            if (this.resetTimeout !== null) { clearTimeout(this.resetTimeout); }
+
+            var _this = this;
+
+            this.resetTimeout = setTimeout(function(){
+                _this.reset(1);
+            }, delay);
         },
 
         reset: function(i) {
@@ -74,16 +106,6 @@ var ticker = function(t) {
 
             this.count = i;
             this.setChar(i);
-        },
-
-        delayedReset: function() {
-            if (this.timeout !== null) { clearTimeout(this.timeout); }
-
-            var _this = this;
-
-            this.timeout = setTimeout(function(){
-                _this.reset(1);
-            }, 1000);
         },
 
         setChar: function(i) {
@@ -102,10 +124,10 @@ var drawGrid = function() {
     var w = window.innerWidth - pad;
     var h = window.innerHeight - pad;
 
-    cols = Math.floor(w / spacing);
-    rows = Math.floor(h / spacing);
+    cols = Math.floor(w / spacingX);
+    rows = Math.floor(h / spacingY);
 
-    var rectangle = new Rectangle(new Point(-spacing / 2, -spacing / 2), new Size(w - spacing / 2, h - spacing / 2));
+    var rectangle = new Rectangle(new Point(-spacingX / 2, -spacingY / 2), new Size(w - spacingX / 2, h - spacingY / 2));
     var path = new Path.Rectangle(rectangle);
     path.fillColor = new Color(0, 0, 0, 0);
 
@@ -116,8 +138,8 @@ var drawGrid = function() {
 
         for (var ii = 0; ii < rows; ii++) {
             var t = new PointText();
-            t.fontSize = 40;
-            t.position = new Point(i * spacing, ii * spacing);
+            t.fontSize = fontSize;
+            t.position = new Point(i * spacingX, ii * spacingY);
 
             t.ticker = new ticker(t);
             t.ticker.init();
