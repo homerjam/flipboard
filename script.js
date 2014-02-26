@@ -1,7 +1,8 @@
 var b, textArr, layoutArr, tickerArr, cols, rows,
     radius = 4,
     rounding = 0.75,
-    distanceRateMod = 2,
+    distanceRateModifier = 2,
+    distanceRateMultiplier = 1,
     spacing = 50,
     pad = 100,
     chars = (location.search !== '' ? decodeURIComponent(location.search).slice(1) : '•◎◉◎◉').split('');
@@ -25,10 +26,12 @@ var mouseMove = function(e) {
             var distance = distanceX + distanceY;
 
             if ((distanceX <= radius * rounding && distanceY <= radius * rounding) && distance <= radius) {
-                t.ticker.rate = distance + distanceRateMod;
+                t.ticker.rate = (distance + distanceRateModifier) * distanceRateMultiplier;
+
+                t.ticker.delayedReset();
 
             } else {
-                t.ticker.rate = t.ticker.count = 0;
+                t.ticker.stop();
             }
 
         }
@@ -41,21 +44,51 @@ var ticker = function(t) {
     return {
         rate: 0,
         count: 0,
+        timeout: null,
+
+        init: function() {
+            this.reset();
+        },
 
         tick: function() {
             this.count++;
 
             if (this.rate > 0 && this.count >= this.rate) {
-                t.char = t.char === chars.length - 1 ? 1 : t.char + 1;
-                t.content = chars[t.char];
-
                 this.count = 0;
+                this.setChar(t.char === chars.length - 1 ? 1 : t.char + 1);
 
             } else if (this.rate === 0) {
-                t.char = 0;
-                t.content = chars[t.char];
+                this.reset();
             }
+        },
 
+        stop: function() {
+            if (this.timeout !== null) { clearTimeout(this.timeout); }
+
+            this.rate = 0;
+            this.count = 0;
+        },
+
+        reset: function(i) {
+            i = i || 0;
+
+            this.count = i;
+            this.setChar(i);
+        },
+
+        delayedReset: function() {
+            if (this.timeout !== null) { clearTimeout(this.timeout); }
+
+            var _this = this;
+
+            this.timeout = setTimeout(function(){
+                _this.reset(1);
+            }, 1000);
+        },
+
+        setChar: function(i) {
+            t.char = i;
+            t.content = chars[i];
         }
 
     };
@@ -83,12 +116,11 @@ var drawGrid = function() {
 
         for (var ii = 0; ii < rows; ii++) {
             var t = new PointText();
-            t.char = 0;
-            t.content = chars[t.char];
             t.fontSize = 40;
             t.position = new Point(i * spacing, ii * spacing);
 
             t.ticker = new ticker(t);
+            t.ticker.init();
 
             tickerArr.push(t.ticker);
 
@@ -109,8 +141,6 @@ var drawGrid = function() {
 };
 
 var onResize = function() {
-    console.log('onResize');
-
     var w = window.innerWidth;
     var h = window.innerHeight;
 
